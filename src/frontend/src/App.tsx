@@ -27,6 +27,17 @@ export interface Highlight {
 export interface DiscoverItem {
   name: string;
 }
+export interface LeaderMessage {
+  name: string;
+  role: string;
+  message: string;
+  photoUrl?: string;
+}
+export interface ImageUrls {
+  heroUrl?: string;
+  logoUrl?: string;
+  discoverUrls: string[];
+}
 export interface SiteContent {
   hero: { title: string; subtitle: string; description: string };
   announcements: Announcement[];
@@ -36,6 +47,8 @@ export interface SiteContent {
   contact: { address: string; phone: string; email: string };
   footer: { motto: string };
   discover: DiscoverItem[];
+  messages: LeaderMessage[];
+  images: ImageUrls;
 }
 
 const DEFAULT_CONTENT: SiteContent = {
@@ -102,6 +115,29 @@ const DEFAULT_CONTENT: SiteContent = {
     { name: "Athletics" },
     { name: "Student Activities" },
   ],
+  messages: [
+    {
+      role: "Chairman",
+      name: "Name of Chairman",
+      message:
+        "It is with immense pride and joy that I welcome you to Bosing Royal Academy Yagrung. Our institution stands as a pillar of excellence, nurturing future leaders with wisdom, integrity, and a deep sense of purpose. Together, we shall continue to raise the torch of knowledge for generations to come.",
+    },
+    {
+      role: "Managing Director",
+      name: "Name of Managing Director",
+      message:
+        "At Bosing Royal Academy, we are committed to building an institution that empowers every student to dream boldly and achieve greater. Our mission is to provide world-class education rooted in the values of our heritage, ensuring each student discovers their unique potential and contributes meaningfully to society.",
+    },
+    {
+      role: "Principal",
+      name: "Name of Principal",
+      message:
+        "Welcome to our vibrant academic community. As Principal, my commitment is to ensure that every student at Bosing Royal Academy receives not only the finest academic grounding but also the moral and emotional foundation needed to thrive in a rapidly changing world. Our doors are always open to questions, growth, and collaboration.",
+    },
+  ],
+  images: {
+    discoverUrls: [],
+  },
 };
 
 const DISCOVER_IMAGES = [
@@ -414,7 +450,37 @@ export default function App() {
     (async () => {
       try {
         const data = await (actor as any).getSiteContent();
-        if (data) setSiteContent(data as SiteContent);
+        if (data) {
+          const mapped: SiteContent = {
+            hero: data.hero || DEFAULT_CONTENT.hero,
+            announcements: data.announcements || DEFAULT_CONTENT.announcements,
+            highlights: data.highlights || DEFAULT_CONTENT.highlights,
+            about: data.about || DEFAULT_CONTENT.about,
+            admissions: data.admissions || DEFAULT_CONTENT.admissions,
+            contact: data.contact || DEFAULT_CONTENT.contact,
+            footer: data.footer || DEFAULT_CONTENT.footer,
+            discover: data.discover || DEFAULT_CONTENT.discover,
+            messages: (data.messages || DEFAULT_CONTENT.messages).map(
+              (m: any) => ({
+                name: m.name,
+                role: m.role,
+                message: m.message,
+                photoUrl:
+                  m.photo && typeof m.photo.getDirectURL === "function"
+                    ? m.photo.getDirectURL()
+                    : m.photoUrl,
+              }),
+            ),
+            images: data.images
+              ? {
+                  heroUrl: data.images.heroUrl,
+                  logoUrl: data.images.logoUrl,
+                  discoverUrls: data.images.discoverUrls || [],
+                }
+              : { discoverUrls: [] },
+          };
+          setSiteContent(mapped);
+        }
       } catch {
         // use defaults
       }
@@ -466,7 +532,32 @@ export default function App() {
     contact,
     footer,
     discover,
+    messages,
+    images,
   } = siteContent;
+
+  const logoSrc =
+    images?.logoUrl ||
+    "/assets/generated/school-crest-transparent.dim_200x200.png";
+  const heroSrc =
+    images?.heroUrl || "/assets/generated/campus-hero.dim_1600x900.jpg";
+
+  const HERO_SLIDES = [
+    heroSrc,
+    "/assets/generated/hero-slide-2.dim_1600x900.jpg",
+    "/assets/generated/hero-slide-3.dim_1600x900.jpg",
+    "/assets/generated/hero-slide-4.dim_1600x900.jpg",
+    "/assets/generated/hero-slide-5.dim_1600x900.jpg",
+  ];
+
+  const [slideIndex, setSlideIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setSlideIndex((prev) => (prev + 1) % HERO_SLIDES.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [HERO_SLIDES.length]);
 
   return (
     <div className="min-h-screen bg-background font-sans">
@@ -474,7 +565,9 @@ export default function App() {
 
       {/* HEADER */}
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-shadow duration-300 ${scrolled ? "shadow-md" : ""}`}
+        className={`fixed top-0 left-0 right-0 z-50 transition-shadow duration-300 ${
+          scrolled ? "shadow-md" : ""
+        }`}
         style={{ background: "oklch(var(--navy))" }}
         data-ocid="header.section"
       >
@@ -486,7 +579,7 @@ export default function App() {
               data-ocid="header.link"
             >
               <img
-                src="/assets/generated/school-crest-transparent.dim_200x200.png"
+                src={logoSrc}
                 alt="Bosing Royal Academy Crest"
                 className="w-10 h-10 md:w-12 md:h-12 object-contain rounded-full"
               />
@@ -608,27 +701,43 @@ export default function App() {
           className="relative flex items-center justify-center min-h-screen pt-16"
           data-ocid="hero.section"
         >
-          <div className="absolute inset-0">
-            <img
-              src="/assets/generated/campus-hero.dim_1600x900.jpg"
-              alt="Bosing Royal Academy Campus"
-              className="w-full h-full object-cover"
-              loading="eager"
-            />
+          <div className="absolute inset-0 overflow-hidden">
+            {HERO_SLIDES.map((src, i) => (
+              <img
+                key={src}
+                src={src}
+                alt={`Campus slide ${i + 1}`}
+                className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000"
+                style={{ opacity: i === slideIndex ? 1 : 0 }}
+                loading={i === 0 ? "eager" : "lazy"}
+              />
+            ))}
             <div
               className="absolute inset-0"
               style={{ background: "rgba(15,47,70,0.68)" }}
             />
+            {/* Dot navigation */}
+            <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-2 z-20">
+              {HERO_SLIDES.map((src, i) => (
+                <button
+                  type="button"
+                  key={src}
+                  onClick={() => setSlideIndex(i)}
+                  className="w-3 h-3 rounded-full transition-all duration-300 border border-white/60"
+                  style={{
+                    background:
+                      i === slideIndex
+                        ? "oklch(var(--gold))"
+                        : "rgba(255,255,255,0.35)",
+                    transform: i === slideIndex ? "scale(1.3)" : "scale(1)",
+                  }}
+                  aria-label={`Go to slide ${i + 1}`}
+                  data-ocid="hero.toggle"
+                />
+              ))}
+            </div>
           </div>
           <div className="relative z-10 text-center px-4 sm:px-8 max-w-4xl mx-auto py-24">
-            <motion.img
-              src="/assets/generated/school-crest-transparent.dim_200x200.png"
-              alt="School Crest"
-              className="w-20 h-20 md:w-28 md:h-28 mx-auto mb-6 object-contain"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6 }}
-            />
             <motion.h1
               className="font-serif font-bold text-4xl sm:text-5xl md:text-6xl lg:text-7xl mb-4 leading-tight"
               style={{
@@ -862,34 +971,40 @@ export default function App() {
               </h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              {discover.map((tile, i) => (
-                <motion.div
-                  key={`${tile.name}-${i}`}
-                  className="relative overflow-hidden rounded-lg group cursor-pointer aspect-video"
-                  initial={{ opacity: 0, scale: 0.97 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: i * 0.1 }}
-                  data-ocid={`discover.item.${i + 1}`}
-                >
-                  <img
-                    src={DISCOVER_IMAGES[i] || DISCOVER_IMAGES[0]}
-                    alt={tile.name}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    loading="lazy"
-                  />
-                  <div
-                    className="absolute inset-0 transition-opacity duration-300"
-                    style={{
-                      background:
-                        "linear-gradient(to top, rgba(15,47,70,0.85) 0%, rgba(15,47,70,0.2) 60%, transparent 100%)",
-                    }}
-                  />
-                  <span className="absolute bottom-5 left-5 text-white font-serif font-bold text-xl md:text-2xl tracking-wide">
-                    {tile.name}
-                  </span>
-                </motion.div>
-              ))}
+              {discover.map((tile, i) => {
+                const imgSrc =
+                  images?.discoverUrls?.[i] ||
+                  DISCOVER_IMAGES[i] ||
+                  DISCOVER_IMAGES[0];
+                return (
+                  <motion.div
+                    key={`${tile.name}-${i}`}
+                    className="relative overflow-hidden rounded-lg group cursor-pointer aspect-video"
+                    initial={{ opacity: 0, scale: 0.97 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: i * 0.1 }}
+                    data-ocid={`discover.item.${i + 1}`}
+                  >
+                    <img
+                      src={imgSrc}
+                      alt={tile.name}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                    <div
+                      className="absolute inset-0 transition-opacity duration-300"
+                      style={{
+                        background:
+                          "linear-gradient(to top, rgba(15,47,70,0.85) 0%, rgba(15,47,70,0.2) 60%, transparent 100%)",
+                      }}
+                    />
+                    <span className="absolute bottom-5 left-5 text-white font-serif font-bold text-xl md:text-2xl tracking-wide">
+                      {tile.name}
+                    </span>
+                  </motion.div>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -918,6 +1033,44 @@ export default function App() {
           <p className="text-foreground/70 text-base leading-relaxed">
             {about.body2}
           </p>
+        </section>
+
+        {/* LEADERSHIP MESSAGES */}
+        <section
+          id="leadership"
+          className="py-20 px-4"
+          style={{ background: "oklch(var(--navy))" }}
+          data-ocid="leadership.section"
+        >
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-14">
+              <p
+                className="text-sm font-semibold uppercase tracking-widest mb-2"
+                style={{ color: "oklch(var(--gold))" }}
+              >
+                From the Desk of Our Leaders
+              </p>
+              <h2 className="font-serif text-3xl md:text-4xl font-bold text-white">
+                Leadership Messages
+              </h2>
+              <div
+                className="mt-4 mx-auto h-px w-24"
+                style={{
+                  background:
+                    "linear-gradient(90deg, transparent, oklch(var(--gold)), transparent)",
+                }}
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {messages.map((msg, i) => (
+                <LeaderMessageCard
+                  key={`${msg.role}-${i}`}
+                  msg={msg}
+                  index={i}
+                />
+              ))}
+            </div>
+          </div>
         </section>
 
         {/* ADMISSIONS CTA */}
@@ -1103,7 +1256,7 @@ export default function App() {
         <div className="border-b border-white/10 py-10 px-4">
           <div className="max-w-6xl mx-auto text-center">
             <img
-              src="/assets/generated/school-crest-transparent.dim_200x200.png"
+              src={logoSrc}
               alt="Bosing Royal Academy Crest"
               className="w-16 h-16 mx-auto mb-3 object-contain"
             />
@@ -1375,5 +1528,82 @@ function AnnouncementCard({
         </a>
       </div>
     </motion.article>
+  );
+}
+
+function LeaderMessageCard({
+  msg,
+  index,
+}: { msg: LeaderMessage; index: number }) {
+  const initials = msg.name
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+
+  return (
+    <motion.div
+      className="rounded-xl p-8 flex flex-col"
+      style={{
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(201,162,74,0.25)",
+      }}
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.55, delay: index * 0.12 }}
+      data-ocid={`leadership.card.${index + 1}`}
+    >
+      {/* Quote mark */}
+      <div
+        className="text-5xl font-serif leading-none mb-4 select-none"
+        style={{ color: "oklch(var(--gold) / 0.35)" }}
+        aria-hidden="true"
+      >
+        &ldquo;
+      </div>
+
+      <p className="text-white/75 text-sm leading-relaxed flex-1 mb-6">
+        {msg.message}
+      </p>
+
+      {/* Leader info */}
+      <div
+        className="flex items-center gap-4 pt-4"
+        style={{ borderTop: "1px solid rgba(201,162,74,0.2)" }}
+      >
+        {msg.photoUrl ? (
+          <img
+            src={msg.photoUrl}
+            alt={msg.name}
+            className="w-14 h-14 rounded-full object-cover shrink-0"
+            style={{ border: "2px solid rgba(201,162,74,0.5)" }}
+          />
+        ) : (
+          <div
+            className="w-14 h-14 rounded-full flex items-center justify-center shrink-0 font-serif font-bold text-lg"
+            style={{
+              background: "rgba(201,162,74,0.15)",
+              border: "2px solid rgba(201,162,74,0.4)",
+              color: "oklch(var(--gold))",
+            }}
+          >
+            {initials || "?"}
+          </div>
+        )}
+        <div>
+          <p className="font-serif font-bold text-white text-base leading-tight">
+            {msg.name}
+          </p>
+          <p
+            className="text-xs font-semibold uppercase tracking-wider mt-0.5"
+            style={{ color: "oklch(var(--gold))" }}
+          >
+            {msg.role}
+          </p>
+        </div>
+      </div>
+    </motion.div>
   );
 }

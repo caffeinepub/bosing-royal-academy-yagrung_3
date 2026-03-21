@@ -3,16 +3,31 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Lock, Plus, Save, Trash2, X } from "lucide-react";
+import { HttpAgent } from "@icp-sdk/core/agent";
+import {
+  ImageIcon,
+  Loader2,
+  Lock,
+  Plus,
+  Save,
+  Trash2,
+  Upload,
+  X,
+} from "lucide-react";
 import { motion } from "motion/react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import type {
   Announcement,
   DiscoverItem,
   Highlight,
+  ImageUrls,
+  LeaderMessage,
   SiteContent,
 } from "../App";
+import { ExternalBlob } from "../backend";
+import { loadConfig } from "../config";
+import { StorageClient } from "../utils/StorageClient";
 
 interface AdminPanelProps {
   actor: any;
@@ -20,6 +35,21 @@ interface AdminPanelProps {
   siteContent: SiteContent;
   onContentUpdate: (content: SiteContent) => void;
   onClose: () => void;
+}
+
+async function uploadImageFile(file: File): Promise<string> {
+  const config = await loadConfig();
+  const agent = new HttpAgent({ host: config.backend_host });
+  const storageClient = new StorageClient(
+    config.bucket_name,
+    config.storage_gateway_url,
+    config.backend_canister_id,
+    config.project_id,
+    agent,
+  );
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const { hash } = await storageClient.putFile(bytes);
+  return storageClient.getDirectURL(hash);
 }
 
 export default function AdminPanel({
@@ -43,10 +73,23 @@ export default function AdminPanel({
   const [discover, setDiscover] = useState<DiscoverItem[]>(
     siteContent.discover.map((d) => ({ ...d })),
   );
+  const [messages, setMessages] = useState<LeaderMessage[]>(
+    (siteContent.messages || []).map((m) => ({ ...m })),
+  );
+  const [images, setImages] = useState<ImageUrls>(
+    siteContent.images
+      ? {
+          heroUrl: siteContent.images.heroUrl,
+          logoUrl: siteContent.images.logoUrl,
+          discoverUrls: [...(siteContent.images.discoverUrls || [])],
+        }
+      : { discoverUrls: [] },
+  );
   const [currentPin, setCurrentPin] = useState("");
   const [newPin, setNewPin] = useState("");
   const [confirmPin, setConfirmPin] = useState("");
   const [saving, setSaving] = useState<string | null>(null);
+  const [uploading, setUploading] = useState<string | null>(null);
 
   const callBackend = async (method: string, args: any[]) => {
     if (!actor) return false;
@@ -54,6 +97,23 @@ export default function AdminPanel({
       return await (actor as any)[method](...args);
     } catch {
       return false;
+    }
+  };
+
+  const handleImageUpload = async (
+    file: File,
+    key: string,
+    onUrl: (url: string) => void,
+  ) => {
+    setUploading(key);
+    try {
+      const url = await uploadImageFile(file);
+      onUrl(url);
+      toast.success("Image uploaded successfully!");
+    } catch {
+      toast.error("Failed to upload image. Please try again.");
+    } finally {
+      setUploading(null);
     }
   };
 
@@ -93,6 +153,27 @@ export default function AdminPanel({
           await callBackend("updateDiscover", [adminPin, discover]);
           onContentUpdate({ ...siteContent, discover });
           break;
+        case "messages": {
+          const backendMessages = messages.map((m) => ({
+            name: m.name,
+            role: m.role,
+            message: m.message,
+            photo: m.photoUrl ? ExternalBlob.fromURL(m.photoUrl) : undefined,
+          }));
+          await callBackend("updateMessages", [adminPin, backendMessages]);
+          onContentUpdate({ ...siteContent, messages });
+          break;
+        }
+        case "images": {
+          const imagePayload: ImageUrls = {
+            heroUrl: images.heroUrl,
+            logoUrl: images.logoUrl,
+            discoverUrls: images.discoverUrls,
+          };
+          await callBackend("updateImages", [adminPin, imagePayload]);
+          onContentUpdate({ ...siteContent, images });
+          break;
+        }
         default:
           toast.error("Unknown section.");
           return;
@@ -141,12 +222,13 @@ export default function AdminPanel({
   };
 
   const isSaving = (s: string) => saving === s;
+  const isUploading = (s: string) => uploading === s;
 
   function SaveBtn({ section }: { section: string }) {
     return (
       <Button
         onClick={() => saveSection(section)}
-        disabled={saving !== null}
+        disabled={saving !== null || uploading !== null}
         className="mt-4"
         style={{
           background: "oklch(var(--navy))",
@@ -161,6 +243,71 @@ export default function AdminPanel({
         )}
         {isSaving(section) ? "Saving..." : "Save Changes"}
       </Button>
+    );
+  }
+
+  function UploadBtn({
+    uploadKey,
+    onFile,
+    label = "Upload Image",
+  }: {
+    uploadKey: string;
+    onFile: (file: File) => void;
+    label?: string;
+  }) {
+    const ref = useRef<HTMLInputElement>(null);
+    return (
+      <>
+        <input
+          ref={ref}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) onFile(f);
+            e.target.value = "";
+          }}
+          data-ocid="admin.upload_button"
+        />
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => ref.current?.click()}
+          disabled={uploading !== null || saving !== null}
+          className="gap-2 text-xs"
+          style={{
+            borderColor: "rgba(201,162,74,0.4)",
+            color: "oklch(var(--gold))",
+            background: "transparent",
+          }}
+        >
+          {isUploading(uploadKey) ? (
+            <Loader2 className="h-3 w-3 animate-spin" />
+          ) : (
+            <Upload className="h-3 w-3" />
+          )}
+          {isUploading(uploadKey) ? "Uploading..." : label}
+        </Button>
+      </>
+    );
+  }
+
+  function ImagePreview({ url, label }: { url?: string; label: string }) {
+    if (!url) return null;
+    return (
+      <div className="mt-2 flex items-center gap-3">
+        <img
+          src={url}
+          alt={label}
+          className="w-20 h-14 object-cover rounded border"
+          style={{ borderColor: "rgba(201,162,74,0.3)" }}
+        />
+        <span className="text-xs text-white/40 truncate max-w-[180px]">
+          {url}
+        </span>
+      </div>
     );
   }
 
@@ -223,6 +370,8 @@ export default function AdminPanel({
             <TabsList className="flex gap-1 px-4 py-2 bg-transparent h-auto rounded-none min-w-max">
               {[
                 "hero",
+                "messages",
+                "images",
                 "announcements",
                 "highlights",
                 "about",
@@ -293,6 +442,329 @@ export default function AdminPanel({
                   />
                 </div>
                 <SaveBtn section="hero" />
+              </TabsContent>
+
+              {/* MESSAGES */}
+              <TabsContent value="messages" className="mt-0">
+                <SectionHeader
+                  title="Leadership Messages"
+                  desc="Edit messages from the Chairman, Managing Director, and Principal."
+                />
+                {messages.map((msg, i) => (
+                  <div
+                    key={`msg-${msg.role}-${i}`}
+                    className="mb-6 p-5 rounded-xl border"
+                    style={{
+                      borderColor: "rgba(201,162,74,0.2)",
+                      background: "rgba(255,255,255,0.03)",
+                    }}
+                    data-ocid={`admin.item.${i + 1}`}
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <span
+                        className="text-sm font-semibold"
+                        style={{ color: "oklch(var(--gold))" }}
+                      >
+                        {msg.role || `Leader ${i + 1}`}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setMessages((prev) =>
+                            prev.filter((_, idx) => idx !== i),
+                          )
+                        }
+                        className="text-destructive hover:brightness-125 transition-colors"
+                        aria-label="Remove message"
+                        data-ocid="admin.delete_button"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <div className={fld}>
+                      <p className={lbl} style={{ color: "white" }}>
+                        Role / Title
+                      </p>
+                      <Input
+                        value={msg.role}
+                        onChange={(e) =>
+                          setMessages((prev) =>
+                            prev.map((x, idx) =>
+                              idx === i ? { ...x, role: e.target.value } : x,
+                            ),
+                          )
+                        }
+                        placeholder="e.g. Chairman"
+                        className="admin-input"
+                        data-ocid="admin.input"
+                      />
+                    </div>
+                    <div className={fld}>
+                      <p className={lbl} style={{ color: "white" }}>
+                        Full Name
+                      </p>
+                      <Input
+                        value={msg.name}
+                        onChange={(e) =>
+                          setMessages((prev) =>
+                            prev.map((x, idx) =>
+                              idx === i ? { ...x, name: e.target.value } : x,
+                            ),
+                          )
+                        }
+                        placeholder="e.g. Dr. Ram Prasad Sharma"
+                        className="admin-input"
+                        data-ocid="admin.input"
+                      />
+                    </div>
+                    <div className={fld}>
+                      <p className={lbl} style={{ color: "white" }}>
+                        Message
+                      </p>
+                      <Textarea
+                        value={msg.message}
+                        onChange={(e) =>
+                          setMessages((prev) =>
+                            prev.map((x, idx) =>
+                              idx === i ? { ...x, message: e.target.value } : x,
+                            ),
+                          )
+                        }
+                        rows={4}
+                        className="admin-input"
+                        data-ocid="admin.textarea"
+                      />
+                    </div>
+                    <div>
+                      <p className={lbl} style={{ color: "white" }}>
+                        Photo (optional)
+                      </p>
+                      <UploadBtn
+                        uploadKey={`msg-photo-${i}`}
+                        label="Upload Photo"
+                        onFile={(file) =>
+                          handleImageUpload(file, `msg-photo-${i}`, (url) =>
+                            setMessages((prev) =>
+                              prev.map((x, idx) =>
+                                idx === i ? { ...x, photoUrl: url } : x,
+                              ),
+                            ),
+                          )
+                        }
+                      />
+                      {msg.photoUrl && (
+                        <div className="mt-2 flex items-center gap-3">
+                          <img
+                            src={msg.photoUrl}
+                            alt={msg.name}
+                            className="w-14 h-14 rounded-full object-cover"
+                            style={{
+                              border: "2px solid rgba(201,162,74,0.4)",
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setMessages((prev) =>
+                                prev.map((x, idx) =>
+                                  idx === i ? { ...x, photoUrl: undefined } : x,
+                                ),
+                              )
+                            }
+                            className="text-xs text-destructive hover:brightness-125"
+                          >
+                            Remove photo
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() =>
+                    setMessages((prev) => [
+                      ...prev,
+                      { role: "", name: "", message: "" },
+                    ])
+                  }
+                  className="flex items-center gap-2 text-sm font-medium mb-4 transition-colors hover:brightness-125"
+                  style={{ color: "oklch(var(--gold))" }}
+                  data-ocid="admin.button"
+                >
+                  <Plus className="w-4 h-4" /> Add Leader
+                </button>
+                <SaveBtn section="messages" />
+              </TabsContent>
+
+              {/* IMAGES */}
+              <TabsContent value="images" className="mt-0">
+                <SectionHeader
+                  title="Site Images"
+                  desc="Upload or replace the hero background, school logo, and discover section photos."
+                />
+
+                {/* Hero Background */}
+                <div
+                  className="mb-6 p-5 rounded-xl border"
+                  style={{
+                    borderColor: "rgba(201,162,74,0.2)",
+                    background: "rgba(255,255,255,0.03)",
+                  }}
+                >
+                  <p
+                    className="text-sm font-semibold mb-3"
+                    style={{ color: "oklch(var(--gold))" }}
+                  >
+                    Hero Background Photo
+                  </p>
+                  <UploadBtn
+                    uploadKey="hero-bg"
+                    label="Upload Background"
+                    onFile={(file) =>
+                      handleImageUpload(file, "hero-bg", (url) =>
+                        setImages((prev) => ({ ...prev, heroUrl: url })),
+                      )
+                    }
+                  />
+                  <ImagePreview url={images.heroUrl} label="Hero background" />
+                  {images.heroUrl && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setImages((prev) => ({ ...prev, heroUrl: undefined }))
+                      }
+                      className="mt-2 text-xs text-destructive hover:brightness-125 block"
+                    >
+                      Remove & use default
+                    </button>
+                  )}
+                </div>
+
+                {/* School Logo */}
+                <div
+                  className="mb-6 p-5 rounded-xl border"
+                  style={{
+                    borderColor: "rgba(201,162,74,0.2)",
+                    background: "rgba(255,255,255,0.03)",
+                  }}
+                >
+                  <p
+                    className="text-sm font-semibold mb-3"
+                    style={{ color: "oklch(var(--gold))" }}
+                  >
+                    School Logo
+                  </p>
+                  <UploadBtn
+                    uploadKey="logo"
+                    label="Upload Logo"
+                    onFile={(file) =>
+                      handleImageUpload(file, "logo", (url) =>
+                        setImages((prev) => ({ ...prev, logoUrl: url })),
+                      )
+                    }
+                  />
+                  {images.logoUrl && (
+                    <div className="mt-2 flex items-center gap-3">
+                      <img
+                        src={images.logoUrl}
+                        alt="Logo"
+                        className="w-16 h-16 rounded-full object-contain"
+                        style={{
+                          border: "2px solid rgba(201,162,74,0.4)",
+                          background: "rgba(255,255,255,0.05)",
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setImages((prev) => ({ ...prev, logoUrl: undefined }))
+                        }
+                        className="text-xs text-destructive hover:brightness-125"
+                      >
+                        Remove & use default
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Discover Photos */}
+                <div
+                  className="mb-6 p-5 rounded-xl border"
+                  style={{
+                    borderColor: "rgba(201,162,74,0.2)",
+                    background: "rgba(255,255,255,0.03)",
+                  }}
+                >
+                  <p
+                    className="text-sm font-semibold mb-4"
+                    style={{ color: "oklch(var(--gold))" }}
+                  >
+                    Discover Section Photos
+                  </p>
+                  <div className="space-y-5">
+                    {[0, 1, 2, 3].map((idx) => (
+                      <div key={`disc-img-${idx}`}>
+                        <p
+                          className="text-xs font-medium mb-2"
+                          style={{ color: "rgba(255,255,255,0.6)" }}
+                        >
+                          Discover Photo {idx + 1}{" "}
+                          <span style={{ color: "oklch(var(--gold) / 0.6)" }}>
+                            (
+                            {siteContent.discover[idx]?.name ||
+                              `Tile ${idx + 1}`}
+                            )
+                          </span>
+                        </p>
+                        <UploadBtn
+                          uploadKey={`disc-img-${idx}`}
+                          label="Upload Photo"
+                          onFile={(file) =>
+                            handleImageUpload(
+                              file,
+                              `disc-img-${idx}`,
+                              (url) => {
+                                setImages((prev) => {
+                                  const next = [...(prev.discoverUrls || [])];
+                                  next[idx] = url;
+                                  return { ...prev, discoverUrls: next };
+                                });
+                              },
+                            )
+                          }
+                        />
+                        {images.discoverUrls?.[idx] && (
+                          <div className="mt-2 flex items-center gap-3">
+                            <img
+                              src={images.discoverUrls[idx]}
+                              alt={`Discover ${idx + 1}`}
+                              className="w-24 h-14 object-cover rounded"
+                              style={{
+                                border: "1px solid rgba(201,162,74,0.3)",
+                              }}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setImages((prev) => {
+                                  const next = [...(prev.discoverUrls || [])];
+                                  next[idx] = "";
+                                  return { ...prev, discoverUrls: next };
+                                });
+                              }}
+                              className="text-xs text-destructive hover:brightness-125"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <SaveBtn section="images" />
               </TabsContent>
 
               {/* ANNOUNCEMENTS */}

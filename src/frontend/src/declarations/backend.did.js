@@ -8,10 +8,247 @@
 
 import { IDL } from '@icp-sdk/core/candid';
 
-export const idlService = IDL.Service({});
+export const _CaffeineStorageCreateCertificateResult = IDL.Record({
+  'method' : IDL.Text,
+  'blob_hash' : IDL.Text,
+});
+export const _CaffeineStorageRefillInformation = IDL.Record({
+  'proposed_top_up_amount' : IDL.Opt(IDL.Nat),
+});
+export const _CaffeineStorageRefillResult = IDL.Record({
+  'success' : IDL.Opt(IDL.Bool),
+  'topped_up_amount' : IDL.Opt(IDL.Nat),
+});
+export const ContactContent = IDL.Record({
+  'email' : IDL.Text,
+  'address' : IDL.Text,
+  'phone' : IDL.Text,
+});
+export const AboutContent = IDL.Record({
+  'body1' : IDL.Text,
+  'body2' : IDL.Text,
+});
+export const AdmissionsContent = IDL.Record({
+  'description' : IDL.Text,
+  'heading' : IDL.Text,
+});
+export const ExternalBlob = IDL.Vec(IDL.Nat8);
+export const LeaderMessage = IDL.Record({
+  'name' : IDL.Text,
+  'role' : IDL.Text,
+  'message' : IDL.Text,
+  'photo' : IDL.Opt(ExternalBlob),
+});
+export const HeroContent = IDL.Record({
+  'title' : IDL.Text,
+  'description' : IDL.Text,
+  'subtitle' : IDL.Text,
+});
+export const Highlight = IDL.Record({ 'title' : IDL.Text, 'text' : IDL.Text });
+export const DiscoverTile = IDL.Record({ 'name' : IDL.Text });
+export const Announcement = IDL.Record({
+  'title' : IDL.Text,
+  'date' : IDL.Text,
+  'excerpt' : IDL.Text,
+});
+export const FooterContent = IDL.Record({ 'motto' : IDL.Text });
+export const ImageUrls = IDL.Record({
+  'heroUrl' : IDL.Opt(IDL.Text),
+  'logoUrl' : IDL.Opt(IDL.Text),
+  'discoverUrls' : IDL.Vec(IDL.Text),
+});
+export const SiteContent = IDL.Record({
+  'contact' : ContactContent,
+  'about' : AboutContent,
+  'admissions' : AdmissionsContent,
+  'messages' : IDL.Vec(LeaderMessage),
+  'hero' : HeroContent,
+  'name' : IDL.Text,
+  'highlights' : IDL.Vec(Highlight),
+  'discover' : IDL.Vec(DiscoverTile),
+  'announcements' : IDL.Vec(Announcement),
+  'footer' : FooterContent,
+  'images' : ImageUrls,
+});
+
+export const idlService = IDL.Service({
+  '_caffeineStorageBlobIsLive' : IDL.Func(
+      [IDL.Vec(IDL.Nat8)],
+      [IDL.Bool],
+      ['query'],
+    ),
+  '_caffeineStorageBlobsToDelete' : IDL.Func(
+      [],
+      [IDL.Vec(IDL.Vec(IDL.Nat8))],
+      ['query'],
+    ),
+  '_caffeineStorageConfirmBlobDeletion' : IDL.Func(
+      [IDL.Vec(IDL.Vec(IDL.Nat8))],
+      [],
+      [],
+    ),
+  '_caffeineStorageCreateCertificate' : IDL.Func(
+      [IDL.Text],
+      [_CaffeineStorageCreateCertificateResult],
+      [],
+    ),
+  '_caffeineStorageRefillCashier' : IDL.Func(
+      [IDL.Opt(_CaffeineStorageRefillInformation)],
+      [_CaffeineStorageRefillResult],
+      [],
+    ),
+  '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
+  'changePin' : IDL.Func([IDL.Text, IDL.Text], [IDL.Bool], []),
+  'getSiteContent' : IDL.Func([], [SiteContent], ['query']),
+  'updateAbout' : IDL.Func([IDL.Text, AboutContent], [IDL.Bool], []),
+  'updateAdmissions' : IDL.Func([IDL.Text, AdmissionsContent], [IDL.Bool], []),
+  'updateAnnouncements' : IDL.Func(
+      [IDL.Text, IDL.Vec(Announcement)],
+      [IDL.Bool],
+      [],
+    ),
+  'updateContact' : IDL.Func([IDL.Text, ContactContent], [IDL.Bool], []),
+  'updateDiscover' : IDL.Func(
+      [IDL.Text, IDL.Vec(DiscoverTile)],
+      [IDL.Bool],
+      [],
+    ),
+  'updateFooter' : IDL.Func([IDL.Text, FooterContent], [IDL.Bool], []),
+  'updateHero' : IDL.Func([IDL.Text, HeroContent], [IDL.Bool], []),
+  'updateHighlights' : IDL.Func([IDL.Text, IDL.Vec(Highlight)], [IDL.Bool], []),
+  'updateImages' : IDL.Func([IDL.Text, ImageUrls], [IDL.Bool], []),
+  'updateMessages' : IDL.Func(
+      [IDL.Text, IDL.Vec(LeaderMessage)],
+      [IDL.Bool],
+      [],
+    ),
+  'verifyPin' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
+});
 
 export const idlInitArgs = [];
 
-export const idlFactory = ({ IDL }) => { return IDL.Service({}); };
+export const idlFactory = ({ IDL }) => {
+  const _CaffeineStorageCreateCertificateResult = IDL.Record({
+    'method' : IDL.Text,
+    'blob_hash' : IDL.Text,
+  });
+  const _CaffeineStorageRefillInformation = IDL.Record({
+    'proposed_top_up_amount' : IDL.Opt(IDL.Nat),
+  });
+  const _CaffeineStorageRefillResult = IDL.Record({
+    'success' : IDL.Opt(IDL.Bool),
+    'topped_up_amount' : IDL.Opt(IDL.Nat),
+  });
+  const ContactContent = IDL.Record({
+    'email' : IDL.Text,
+    'address' : IDL.Text,
+    'phone' : IDL.Text,
+  });
+  const AboutContent = IDL.Record({ 'body1' : IDL.Text, 'body2' : IDL.Text });
+  const AdmissionsContent = IDL.Record({
+    'description' : IDL.Text,
+    'heading' : IDL.Text,
+  });
+  const ExternalBlob = IDL.Vec(IDL.Nat8);
+  const LeaderMessage = IDL.Record({
+    'name' : IDL.Text,
+    'role' : IDL.Text,
+    'message' : IDL.Text,
+    'photo' : IDL.Opt(ExternalBlob),
+  });
+  const HeroContent = IDL.Record({
+    'title' : IDL.Text,
+    'description' : IDL.Text,
+    'subtitle' : IDL.Text,
+  });
+  const Highlight = IDL.Record({ 'title' : IDL.Text, 'text' : IDL.Text });
+  const DiscoverTile = IDL.Record({ 'name' : IDL.Text });
+  const Announcement = IDL.Record({
+    'title' : IDL.Text,
+    'date' : IDL.Text,
+    'excerpt' : IDL.Text,
+  });
+  const FooterContent = IDL.Record({ 'motto' : IDL.Text });
+  const ImageUrls = IDL.Record({
+    'heroUrl' : IDL.Opt(IDL.Text),
+    'logoUrl' : IDL.Opt(IDL.Text),
+    'discoverUrls' : IDL.Vec(IDL.Text),
+  });
+  const SiteContent = IDL.Record({
+    'contact' : ContactContent,
+    'about' : AboutContent,
+    'admissions' : AdmissionsContent,
+    'messages' : IDL.Vec(LeaderMessage),
+    'hero' : HeroContent,
+    'name' : IDL.Text,
+    'highlights' : IDL.Vec(Highlight),
+    'discover' : IDL.Vec(DiscoverTile),
+    'announcements' : IDL.Vec(Announcement),
+    'footer' : FooterContent,
+    'images' : ImageUrls,
+  });
+  
+  return IDL.Service({
+    '_caffeineStorageBlobIsLive' : IDL.Func(
+        [IDL.Vec(IDL.Nat8)],
+        [IDL.Bool],
+        ['query'],
+      ),
+    '_caffeineStorageBlobsToDelete' : IDL.Func(
+        [],
+        [IDL.Vec(IDL.Vec(IDL.Nat8))],
+        ['query'],
+      ),
+    '_caffeineStorageConfirmBlobDeletion' : IDL.Func(
+        [IDL.Vec(IDL.Vec(IDL.Nat8))],
+        [],
+        [],
+      ),
+    '_caffeineStorageCreateCertificate' : IDL.Func(
+        [IDL.Text],
+        [_CaffeineStorageCreateCertificateResult],
+        [],
+      ),
+    '_caffeineStorageRefillCashier' : IDL.Func(
+        [IDL.Opt(_CaffeineStorageRefillInformation)],
+        [_CaffeineStorageRefillResult],
+        [],
+      ),
+    '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
+    'changePin' : IDL.Func([IDL.Text, IDL.Text], [IDL.Bool], []),
+    'getSiteContent' : IDL.Func([], [SiteContent], ['query']),
+    'updateAbout' : IDL.Func([IDL.Text, AboutContent], [IDL.Bool], []),
+    'updateAdmissions' : IDL.Func(
+        [IDL.Text, AdmissionsContent],
+        [IDL.Bool],
+        [],
+      ),
+    'updateAnnouncements' : IDL.Func(
+        [IDL.Text, IDL.Vec(Announcement)],
+        [IDL.Bool],
+        [],
+      ),
+    'updateContact' : IDL.Func([IDL.Text, ContactContent], [IDL.Bool], []),
+    'updateDiscover' : IDL.Func(
+        [IDL.Text, IDL.Vec(DiscoverTile)],
+        [IDL.Bool],
+        [],
+      ),
+    'updateFooter' : IDL.Func([IDL.Text, FooterContent], [IDL.Bool], []),
+    'updateHero' : IDL.Func([IDL.Text, HeroContent], [IDL.Bool], []),
+    'updateHighlights' : IDL.Func(
+        [IDL.Text, IDL.Vec(Highlight)],
+        [IDL.Bool],
+        [],
+      ),
+    'updateImages' : IDL.Func([IDL.Text, ImageUrls], [IDL.Bool], []),
+    'updateMessages' : IDL.Func(
+        [IDL.Text, IDL.Vec(LeaderMessage)],
+        [IDL.Bool],
+        [],
+      ),
+    'verifyPin' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
+  });
+};
 
 export const init = ({ IDL }) => { return []; };
