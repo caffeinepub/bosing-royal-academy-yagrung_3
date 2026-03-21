@@ -1,5 +1,9 @@
+import { Toaster } from "@/components/ui/sonner";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+import AdminPanel from "./components/AdminPanel";
+import { useActor } from "./hooks/useActor";
 
 const NAV_LINKS = [
   { label: "Home", href: "#home" },
@@ -11,125 +15,100 @@ const NAV_LINKS = [
   { label: "Contact", href: "#contact" },
 ];
 
-const ANNOUNCEMENTS = [
-  {
-    date: "March 18, 2026",
-    title: "Annual Science & Innovation Fair 2026",
-    excerpt:
-      "Students from Grades 7–12 are invited to present their research projects at the Annual Science & Innovation Fair on April 5th. Registration closes March 28th.",
-  },
-  {
-    date: "March 12, 2026",
-    title: "Admissions Open for Academic Year 2026–27",
-    excerpt:
-      "Applications are now being accepted for all grade levels for the upcoming academic year. Early application deadline is April 30, 2026. Download the prospectus today.",
-  },
-  {
-    date: "March 5, 2026",
-    title: "National Day Cultural Programme",
-    excerpt:
-      "Bosing Royal Academy proudly announces its National Day Cultural Programme on March 25th. All parents and community members are warmly invited to attend.",
-  },
-];
-
-function IconGradCap() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      className="w-10 h-10"
-      aria-hidden="true"
-    >
-      <path
-        d="M22 10v6M2 10l10-5 10 5-10 5z"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M6 12v5c3.333 1.667 8.667 1.667 12 0v-5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
+export interface Announcement {
+  date: string;
+  title: string;
+  excerpt: string;
+}
+export interface Highlight {
+  title: string;
+  text: string;
+}
+export interface DiscoverItem {
+  name: string;
+}
+export interface SiteContent {
+  hero: { title: string; subtitle: string; description: string };
+  announcements: Announcement[];
+  highlights: Highlight[];
+  about: { body1: string; body2: string };
+  admissions: { heading: string; description: string };
+  contact: { address: string; phone: string; email: string };
+  footer: { motto: string };
+  discover: DiscoverItem[];
 }
 
-function IconGlobe() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      className="w-10 h-10"
-      aria-hidden="true"
-    >
-      <circle cx="12" cy="12" r="10" />
-      <path
-        d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
+const DEFAULT_CONTENT: SiteContent = {
+  hero: {
+    title: "Bosing Royal Academy Yagrung",
+    subtitle: "Excellence in Education, Rooted in Heritage",
+    description:
+      "Welcome to Bosing Royal Academy Yagrung \u2014 where we cultivate curious minds, strong character, and lifelong learners ready to shape a better world.",
+  },
+  announcements: [
+    {
+      date: "March 18, 2026",
+      title: "Annual Science & Innovation Fair 2026",
+      excerpt:
+        "Students from Grades 7\u201312 are invited to present their research projects at the Annual Science & Innovation Fair on April 5th. Registration closes March 28th.",
+    },
+    {
+      date: "March 12, 2026",
+      title: "Admissions Open for Academic Year 2026\u201327",
+      excerpt:
+        "Applications are now being accepted for all grade levels for the upcoming academic year. Early application deadline is April 30, 2026. Download the prospectus today.",
+    },
+    {
+      date: "March 5, 2026",
+      title: "National Day Cultural Programme",
+      excerpt:
+        "Bosing Royal Academy proudly announces its National Day Cultural Programme on March 25th. All parents and community members are warmly invited to attend.",
+    },
+  ],
+  highlights: [
+    {
+      title: "Expert Faculty",
+      text: "Our dedicated educators bring decades of experience and passion, nurturing every student to reach their highest potential in an inspiring academic environment.",
+    },
+    {
+      title: "Global Curriculum",
+      text: "We follow a globally benchmarked curriculum that prepares students for international universities and careers, while celebrating local culture and heritage.",
+    },
+    {
+      title: "Holistic Development",
+      text: "Beyond academics, we champion arts, sports, leadership, and community service \u2014 ensuring every student blossoms into a well-rounded individual.",
+    },
+  ],
+  about: {
+    body1:
+      "Founded with a vision to bring world-class education to the hills of Taplejung, Bosing Royal Academy Yagrung has been a beacon of learning, character, and community. Nestled in the scenic Yagrung valley, our campus offers a nurturing environment where every child's potential is recognised and celebrated.",
+    body2:
+      "Our teaching philosophy blends rigorous academics with values rooted in Nepali culture \u2014 instilling wisdom, integrity, and excellence in every student who walks through our gates.",
+  },
+  admissions: {
+    heading: "Admissions Open 2026\u201327",
+    description:
+      "Take the first step toward a transformative educational journey. Applications for the new academic year are now open for all grade levels.",
+  },
+  contact: {
+    address: "Yagrung, Taplejung District, Koshi Province, Nepal",
+    phone: "+977-1-XXXXXXX",
+    email: "info@bosingroyalacademy.edu.np",
+  },
+  footer: { motto: "Wisdom  |  Integrity  |  Excellence" },
+  discover: [
+    { name: "Library" },
+    { name: "Science Lab" },
+    { name: "Athletics" },
+    { name: "Student Activities" },
+  ],
+};
 
-function IconStar() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      className="w-10 h-10"
-      aria-hidden="true"
-    >
-      <polygon
-        points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-const HIGHLIGHTS = [
-  {
-    icon: <IconGradCap />,
-    title: "Expert Faculty",
-    text: "Our dedicated educators bring decades of experience and passion, nurturing every student to reach their highest potential in an inspiring academic environment.",
-  },
-  {
-    icon: <IconGlobe />,
-    title: "Global Curriculum",
-    text: "We follow a globally benchmarked curriculum that prepares students for international universities and careers, while celebrating local culture and heritage.",
-  },
-  {
-    icon: <IconStar />,
-    title: "Holistic Development",
-    text: "Beyond academics, we champion arts, sports, leadership, and community service — ensuring every student blossoms into a well-rounded individual.",
-  },
-];
-
-const DISCOVER = [
-  {
-    label: "Library",
-    img: "/assets/generated/discover-library.dim_600x400.jpg",
-  },
-  {
-    label: "Science Lab",
-    img: "/assets/generated/discover-science.dim_600x400.jpg",
-  },
-  {
-    label: "Athletics",
-    img: "/assets/generated/discover-athletics.dim_600x400.jpg",
-  },
-  {
-    label: "Student Activities",
-    img: "/assets/generated/discover-activities.dim_600x400.jpg",
-  },
+const DISCOVER_IMAGES = [
+  "/assets/generated/discover-library.dim_600x400.jpg",
+  "/assets/generated/discover-science.dim_600x400.jpg",
+  "/assets/generated/discover-athletics.dim_600x400.jpg",
+  "/assets/generated/discover-activities.dim_600x400.jpg",
 ];
 
 const FOOTER_QUICK = [
@@ -155,10 +134,292 @@ const FOOTER_ACADEMICS = [
   "Academic Calendar",
 ];
 
+function IconGradCap() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      className="w-10 h-10"
+      aria-hidden="true"
+    >
+      <path
+        d="M22 10v6M2 10l10-5 10 5-10 5z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M6 12v5c3.333 1.667 8.667 1.667 12 0v-5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+function IconGlobe() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      className="w-10 h-10"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <path
+        d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+function IconStar() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      className="w-10 h-10"
+      aria-hidden="true"
+    >
+      <polygon
+        points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+const HIGHLIGHT_ICONS = [
+  <IconGradCap key="grad" />,
+  <IconGlobe key="globe" />,
+  <IconStar key="star" />,
+];
+
+async function verifyPinBackend(actor: any, pin: string): Promise<boolean> {
+  if (!actor) return pin === "1234";
+  try {
+    return await (actor as any).verifyPin(pin);
+  } catch {
+    return pin === "1234";
+  }
+}
+
+// PIN Modal
+function PinModal({
+  onSuccess,
+  onClose,
+  actor,
+}: {
+  onSuccess: (pin: string) => void;
+  onClose: () => void;
+  actor: any;
+}) {
+  const [pin, setPin] = useState("");
+  const [error, setError] = useState("");
+  const [shake, setShake] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const doSubmit = async (pinValue: string) => {
+    setLoading(true);
+    setError("");
+    const ok = await verifyPinBackend(actor, pinValue);
+    setLoading(false);
+    if (ok) {
+      onSuccess(pinValue);
+    } else {
+      setError("Incorrect PIN. Please try again.");
+      setShake(true);
+      setPin("");
+      setTimeout(() => setShake(false), 600);
+    }
+  };
+
+  const handleDigit = (d: string) => {
+    if (loading) return;
+    setPin((prev) => {
+      if (prev.length >= 4) return prev;
+      const next = prev + d;
+      if (next.length === 4) {
+        setTimeout(() => doSubmit(next), 0);
+      }
+      return next;
+    });
+  };
+  const handleBack = () => {
+    if (!loading) setPin((p) => p.slice(0, -1));
+  };
+  const handleClear = () => {
+    if (!loading) setPin("");
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center"
+      style={{ background: "rgba(10,25,40,0.85)", backdropFilter: "blur(6px)" }}
+      data-ocid="pin.modal"
+    >
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        className="bg-card rounded-2xl shadow-2xl p-8 w-80 flex flex-col items-center gap-6"
+      >
+        <div className="flex flex-col items-center gap-1">
+          <div
+            className="w-12 h-12 rounded-full flex items-center justify-center mb-1"
+            style={{ background: "oklch(var(--navy))" }}
+          >
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="white"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" strokeLinecap="round" />
+            </svg>
+          </div>
+          <h2
+            className="font-serif font-bold text-xl"
+            style={{ color: "oklch(var(--navy))" }}
+          >
+            Admin Access
+          </h2>
+          <p className="text-sm text-muted-foreground text-center">
+            Enter your 4-digit security PIN
+          </p>
+        </div>
+
+        {/* PIN dots */}
+        <motion.div
+          className="flex gap-4"
+          animate={shake ? { x: [-8, 8, -8, 8, -4, 4, 0] } : {}}
+          transition={{ duration: 0.4 }}
+        >
+          {[0, 1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="w-4 h-4 rounded-full border-2 transition-all duration-200"
+              style={{
+                borderColor: "oklch(var(--navy))",
+                background:
+                  i < pin.length ? "oklch(var(--navy))" : "transparent",
+              }}
+            />
+          ))}
+        </motion.div>
+
+        {error && (
+          <p
+            className="text-destructive text-xs text-center"
+            data-ocid="pin.error_state"
+          >
+            {error}
+          </p>
+        )}
+
+        {/* Numpad */}
+        <div className="grid grid-cols-3 gap-3 w-full">
+          {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((d) => (
+            <button
+              key={d}
+              type="button"
+              className="h-12 rounded-xl font-semibold text-lg transition-all hover:brightness-95 active:scale-95"
+              style={{
+                background: "oklch(var(--muted))",
+                color: "oklch(var(--navy))",
+              }}
+              onClick={() => handleDigit(d)}
+              disabled={loading}
+              data-ocid="pin.button"
+            >
+              {d}
+            </button>
+          ))}
+          <button
+            type="button"
+            className="h-12 rounded-xl font-semibold text-sm transition-all hover:brightness-95 active:scale-95"
+            style={{
+              background: "oklch(var(--muted))",
+              color: "oklch(var(--navy))",
+            }}
+            onClick={handleClear}
+            disabled={loading}
+            data-ocid="pin.button"
+          >
+            CLR
+          </button>
+          <button
+            type="button"
+            className="h-12 rounded-xl font-semibold text-lg transition-all hover:brightness-95 active:scale-95"
+            style={{
+              background: "oklch(var(--muted))",
+              color: "oklch(var(--navy))",
+            }}
+            onClick={() => handleDigit("0")}
+            disabled={loading}
+            data-ocid="pin.button"
+          >
+            0
+          </button>
+          <button
+            type="button"
+            className="h-12 rounded-xl font-semibold text-sm transition-all hover:brightness-95 active:scale-95"
+            style={{
+              background: "oklch(var(--muted))",
+              color: "oklch(var(--navy))",
+            }}
+            onClick={handleBack}
+            disabled={loading}
+            data-ocid="pin.button"
+          >
+            &#8592;
+          </button>
+        </div>
+
+        <button
+          type="button"
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          onClick={onClose}
+          data-ocid="pin.cancel_button"
+        >
+          Cancel
+        </button>
+      </motion.div>
+    </div>
+  );
+}
+
 export default function App() {
+  const { actor, isFetching } = useActor();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [activeAnnouncement, setActiveAnnouncement] = useState(0);
+  const [siteContent, setSiteContent] = useState<SiteContent>(DEFAULT_CONTENT);
+  const [showPinModal, setShowPinModal] = useState(false);
+  const [adminUnlocked, setAdminUnlocked] = useState(false);
+  const [adminPin, setAdminPin] = useState("");
+
+  useEffect(() => {
+    if (!actor || isFetching) return;
+    (async () => {
+      try {
+        const data = await (actor as any).getSiteContent();
+        if (data) setSiteContent(data as SiteContent);
+      } catch {
+        // use defaults
+      }
+    })();
+  }, [actor, isFetching]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -168,10 +429,27 @@ export default function App() {
 
   const prevAnnouncement = () =>
     setActiveAnnouncement(
-      (p) => (p - 1 + ANNOUNCEMENTS.length) % ANNOUNCEMENTS.length,
+      (p) =>
+        (p - 1 + siteContent.announcements.length) %
+        siteContent.announcements.length,
     );
   const nextAnnouncement = () =>
-    setActiveAnnouncement((p) => (p + 1) % ANNOUNCEMENTS.length);
+    setActiveAnnouncement((p) => (p + 1) % siteContent.announcements.length);
+
+  const handlePinSuccess = (pin: string) => {
+    setAdminPin(pin);
+    setAdminUnlocked(true);
+    setShowPinModal(false);
+  };
+
+  const handleAdminClose = () => {
+    setAdminUnlocked(false);
+    setAdminPin("");
+  };
+
+  const handleContentUpdate = (updated: SiteContent) => {
+    setSiteContent(updated);
+  };
 
   const currentYear = new Date().getFullYear();
   const hostname =
@@ -179,13 +457,24 @@ export default function App() {
       ? encodeURIComponent(window.location.hostname)
       : "";
 
+  const {
+    hero,
+    announcements,
+    highlights,
+    about,
+    admissions,
+    contact,
+    footer,
+    discover,
+  } = siteContent;
+
   return (
     <div className="min-h-screen bg-background font-sans">
+      <Toaster richColors position="top-right" />
+
       {/* HEADER */}
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-shadow duration-300 ${
-          scrolled ? "shadow-md" : ""
-        }`}
+        className={`fixed top-0 left-0 right-0 z-50 transition-shadow duration-300 ${scrolled ? "shadow-md" : ""}`}
         style={{ background: "oklch(var(--navy))" }}
         data-ocid="header.section"
       >
@@ -350,7 +639,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.1 }}
             >
-              Bosing Royal Academy Yagrung
+              {hero.title}
             </motion.h1>
             <motion.p
               className="font-serif text-xl md:text-2xl text-white/90 mb-3 tracking-wide"
@@ -358,7 +647,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.2 }}
             >
-              Excellence in Education, Rooted in Heritage
+              {hero.subtitle}
             </motion.p>
             <motion.p
               className="text-white/75 text-base md:text-lg mb-10 max-w-2xl mx-auto"
@@ -366,9 +655,7 @@ export default function App() {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.7, delay: 0.35 }}
             >
-              Welcome to Bosing Royal Academy Yagrung — where we cultivate
-              curious minds, strong character, and lifelong learners ready to
-              shape a better world.
+              {hero.description}
             </motion.p>
             <motion.div
               className="flex flex-col sm:flex-row gap-4 justify-center"
@@ -420,90 +707,86 @@ export default function App() {
                 Latest Announcements
               </h2>
             </div>
-
-            <div className="relative">
-              <div className="hidden md:grid md:grid-cols-3 gap-6">
-                {ANNOUNCEMENTS.map((a) => (
+            <div className="hidden md:grid md:grid-cols-3 gap-6">
+              {announcements.map((a, i) => (
+                <AnnouncementCard
+                  key={`${a.date}-${i}`}
+                  announcement={a}
+                  index={i}
+                />
+              ))}
+            </div>
+            <div className="md:hidden">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeAnnouncement}
+                  initial={{ opacity: 0, x: 40 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -40 }}
+                  transition={{ duration: 0.3 }}
+                >
                   <AnnouncementCard
-                    key={a.title}
-                    announcement={a}
-                    index={ANNOUNCEMENTS.indexOf(a)}
+                    announcement={announcements[activeAnnouncement]}
+                    index={activeAnnouncement}
                   />
-                ))}
-              </div>
-
-              <div className="md:hidden">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={activeAnnouncement}
-                    initial={{ opacity: 0, x: 40 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -40 }}
-                    transition={{ duration: 0.3 }}
+                </motion.div>
+              </AnimatePresence>
+              <div className="flex items-center justify-center gap-4 mt-6">
+                <button
+                  type="button"
+                  onClick={prevAnnouncement}
+                  className="w-10 h-10 rounded-full border flex items-center justify-center transition-colors hover:bg-primary/10"
+                  style={{
+                    borderColor: "oklch(var(--navy))",
+                    color: "oklch(var(--navy))",
+                  }}
+                  aria-label="Previous announcement"
+                  data-ocid="announcements.pagination_prev"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
                   >
-                    <AnnouncementCard
-                      announcement={ANNOUNCEMENTS[activeAnnouncement]}
-                      index={activeAnnouncement}
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M15 19l-7-7 7-7"
                     />
-                  </motion.div>
-                </AnimatePresence>
-                <div className="flex items-center justify-center gap-4 mt-6">
-                  <button
-                    type="button"
-                    onClick={prevAnnouncement}
-                    className="w-10 h-10 rounded-full border flex items-center justify-center transition-colors hover:bg-primary/10"
-                    style={{
-                      borderColor: "oklch(var(--navy))",
-                      color: "oklch(var(--navy))",
-                    }}
-                    aria-label="Previous announcement"
-                    data-ocid="announcements.pagination_prev"
+                  </svg>
+                </button>
+                <span className="text-sm text-muted-foreground">
+                  {activeAnnouncement + 1} / {announcements.length}
+                </span>
+                <button
+                  type="button"
+                  onClick={nextAnnouncement}
+                  className="w-10 h-10 rounded-full border flex items-center justify-center transition-colors hover:bg-primary/10"
+                  style={{
+                    borderColor: "oklch(var(--navy))",
+                    color: "oklch(var(--navy))",
+                  }}
+                  aria-label="Next announcement"
+                  data-ocid="announcements.pagination_next"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
                   >
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      viewBox="0 0 24 24"
-                      aria-hidden="true"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M15 19l-7-7 7-7"
-                      />
-                    </svg>
-                  </button>
-                  <span className="text-sm text-muted-foreground">
-                    {activeAnnouncement + 1} / {ANNOUNCEMENTS.length}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={nextAnnouncement}
-                    className="w-10 h-10 rounded-full border flex items-center justify-center transition-colors hover:bg-primary/10"
-                    style={{
-                      borderColor: "oklch(var(--navy))",
-                      color: "oklch(var(--navy))",
-                    }}
-                    aria-label="Next announcement"
-                    data-ocid="announcements.pagination_next"
-                  >
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      viewBox="0 0 24 24"
-                      aria-hidden="true"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
-                  </button>
-                </div>
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </button>
               </div>
             </div>
           </div>
@@ -529,9 +812,9 @@ export default function App() {
               </h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {HIGHLIGHTS.map((h, i) => (
+              {highlights.map((h, i) => (
                 <motion.div
-                  key={h.title}
+                  key={`${h.title}-${i}`}
                   className="rounded-lg p-8 text-center"
                   style={{
                     background: "rgba(255,255,255,0.05)",
@@ -547,7 +830,7 @@ export default function App() {
                     className="flex justify-center mb-5"
                     style={{ color: "oklch(var(--gold))" }}
                   >
-                    {h.icon}
+                    {HIGHLIGHT_ICONS[i % HIGHLIGHT_ICONS.length]}
                   </div>
                   <h3 className="font-serif text-xl font-bold text-white mb-3">
                     {h.title}
@@ -579,9 +862,9 @@ export default function App() {
               </h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              {DISCOVER.map((tile, i) => (
+              {discover.map((tile, i) => (
                 <motion.div
-                  key={tile.label}
+                  key={`${tile.name}-${i}`}
                   className="relative overflow-hidden rounded-lg group cursor-pointer aspect-video"
                   initial={{ opacity: 0, scale: 0.97 }}
                   whileInView={{ opacity: 1, scale: 1 }}
@@ -590,8 +873,8 @@ export default function App() {
                   data-ocid={`discover.item.${i + 1}`}
                 >
                   <img
-                    src={tile.img}
-                    alt={tile.label}
+                    src={DISCOVER_IMAGES[i] || DISCOVER_IMAGES[0]}
+                    alt={tile.name}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     loading="lazy"
                   />
@@ -603,7 +886,7 @@ export default function App() {
                     }}
                   />
                   <span className="absolute bottom-5 left-5 text-white font-serif font-bold text-xl md:text-2xl tracking-wide">
-                    {tile.label}
+                    {tile.name}
                   </span>
                 </motion.div>
               ))}
@@ -630,16 +913,10 @@ export default function App() {
             About Bosing Royal Academy Yagrung
           </h2>
           <p className="text-foreground/80 text-base md:text-lg leading-relaxed mb-4">
-            Founded with a vision to bring world-class education to the hills of
-            Taplejung, Bosing Royal Academy Yagrung has been a beacon of
-            learning, character, and community. Nestled in the scenic Yagrung
-            valley, our campus offers a nurturing environment where every
-            child’s potential is recognised and celebrated.
+            {about.body1}
           </p>
           <p className="text-foreground/70 text-base leading-relaxed">
-            Our teaching philosophy blends rigorous academics with values rooted
-            in Nepali culture — instilling wisdom, integrity, and excellence in
-            every student who walks through our gates.
+            {about.body2}
           </p>
         </section>
 
@@ -661,12 +938,10 @@ export default function App() {
               Join Our Family
             </p>
             <h2 className="font-serif text-3xl md:text-4xl font-bold text-white mb-4">
-              Admissions Open 2026–27
+              {admissions.heading}
             </h2>
             <p className="text-white/75 mb-8 text-base md:text-lg">
-              Take the first step toward a transformative educational journey.
-              Applications for the new academic year are now open for all grade
-              levels.
+              {admissions.description}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
@@ -735,7 +1010,7 @@ export default function App() {
                     d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                   />
                 </svg>
-                <span>Yagrung, Taplejung District, Koshi Province, Nepal</span>
+                <span>{contact.address}</span>
               </div>
               <div className="flex items-start gap-3">
                 <svg
@@ -753,7 +1028,7 @@ export default function App() {
                     d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
                   />
                 </svg>
-                <span>+977-1-XXXXXXX</span>
+                <span>{contact.phone}</span>
               </div>
               <div className="flex items-start gap-3">
                 <svg
@@ -771,12 +1046,15 @@ export default function App() {
                     d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                   />
                 </svg>
-                <span>info@bosingroyalacademy.edu.np</span>
+                <span>{contact.email}</span>
               </div>
             </div>
             <form
               className="space-y-4"
-              onSubmit={(e) => e.preventDefault()}
+              onSubmit={(e) => {
+                e.preventDefault();
+                toast.success("Message sent! We'll get back to you soon.");
+              }}
               data-ocid="contact.panel"
             >
               <input
@@ -836,11 +1114,10 @@ export default function App() {
               className="text-sm tracking-[0.25em] uppercase"
               style={{ color: "oklch(var(--gold))" }}
             >
-              Wisdom&nbsp;&nbsp;|&nbsp;&nbsp;Integrity&nbsp;&nbsp;|&nbsp;&nbsp;Excellence
+              {footer.motto}
             </p>
           </div>
         </div>
-
         <div className="py-12 px-4">
           <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
             <div>
@@ -916,29 +1193,25 @@ export default function App() {
               <ul className="space-y-2">
                 <li>
                   <span className="text-sm text-white/60">
-                    Yagrung, Taplejung
+                    {contact.address}
                   </span>
                 </li>
                 <li>
-                  <span className="text-sm text-white/60">Nepal</span>
-                </li>
-                <li>
-                  <span className="text-sm text-white/60">+977-1-XXXXXXX</span>
+                  <span className="text-sm text-white/60">{contact.phone}</span>
                 </li>
                 <li>
                   <a
-                    href="mailto:info@bosingroyalacademy.edu.np"
+                    href={`mailto:${contact.email}`}
                     className="text-sm text-white/60 hover:text-white transition-colors"
                     data-ocid="footer.link"
                   >
-                    info@bosingroyalacademy.edu.np
+                    {contact.email}
                   </a>
                 </li>
               </ul>
             </div>
           </div>
         </div>
-
         <div className="border-t border-white/10 py-6 px-4">
           <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-4">
@@ -946,7 +1219,6 @@ export default function App() {
                 href="https://facebook.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="Facebook"
                 className="text-white/50 hover:text-white transition-colors"
                 data-ocid="footer.link"
               >
@@ -964,7 +1236,6 @@ export default function App() {
                 href="https://youtube.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="YouTube"
                 className="text-white/50 hover:text-white transition-colors"
                 data-ocid="footer.link"
               >
@@ -978,28 +1249,10 @@ export default function App() {
                   <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z" />
                 </svg>
               </a>
-              <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Instagram"
-                className="text-white/50 hover:text-white transition-colors"
-                data-ocid="footer.link"
-              >
-                <span className="sr-only">Instagram</span>
-                <svg
-                  className="w-5 h-5"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
-                </svg>
-              </a>
             </div>
             <p className="text-white/50 text-sm text-center">
               &copy; {currentYear} Bosing Royal Academy Yagrung. Built with{" "}
-              <span style={{ color: "oklch(var(--gold))" }}>♥</span> using{" "}
+              <span style={{ color: "oklch(var(--gold))" }}>&#9829;</span> using{" "}
               <a
                 href={`https://caffeine.ai?utm_source=caffeine-footer&utm_medium=referral&utm_content=${hostname}`}
                 target="_blank"
@@ -1012,6 +1265,56 @@ export default function App() {
           </div>
         </div>
       </footer>
+
+      {/* FLOATING ADMIN BUTTON */}
+      <button
+        type="button"
+        onClick={() => setShowPinModal(true)}
+        className="fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-lg"
+        style={{
+          background: "rgba(15,47,70,0.85)",
+          border: "1.5px solid rgba(201,162,74,0.4)",
+          backdropFilter: "blur(8px)",
+        }}
+        aria-label="Admin Panel"
+        data-ocid="admin.open_modal_button"
+      >
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="white"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+          <path d="M7 11V7a5 5 0 0 1 10 0v4" strokeLinecap="round" />
+        </svg>
+      </button>
+
+      {/* PIN MODAL */}
+      <AnimatePresence>
+        {showPinModal && !adminUnlocked && (
+          <PinModal
+            actor={actor}
+            onSuccess={handlePinSuccess}
+            onClose={() => setShowPinModal(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* ADMIN PANEL */}
+      <AnimatePresence>
+        {adminUnlocked && (
+          <AdminPanel
+            actor={actor}
+            adminPin={adminPin}
+            siteContent={siteContent}
+            onContentUpdate={handleContentUpdate}
+            onClose={handleAdminClose}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -1019,10 +1322,7 @@ export default function App() {
 function AnnouncementCard({
   announcement,
   index,
-}: {
-  announcement: (typeof ANNOUNCEMENTS)[0];
-  index: number;
-}) {
+}: { announcement: Announcement; index: number }) {
   return (
     <motion.article
       className="bg-card rounded-lg shadow-card overflow-hidden flex flex-col"

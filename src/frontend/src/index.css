@@ -59,3 +59,18 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Admin panel input styles for dark overlay */
+.admin-input {
+  background: rgba(255, 255, 255, 0.07) !important;
+  border-color: rgba(201, 162, 74, 0.25) !important;
+  color: white !important;
+}
+.admin-input::placeholder {
+  color: rgba(255, 255, 255, 0.35) !important;
+}
+.admin-input:focus {
+  border-color: oklch(var(--gold)) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px oklch(var(--gold) / 0.2) !important;
+}
