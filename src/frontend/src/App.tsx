@@ -297,7 +297,7 @@ function PinModal({
   return (
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center"
-      style={{ background: "rgba(10,25,40,0.85)", backdropFilter: "blur(6px)" }}
+      style={{ background: "rgba(10,20,70,0.88)", backdropFilter: "blur(6px)" }}
       data-ocid="pin.modal"
     >
       <motion.div
@@ -714,7 +714,7 @@ export default function App() {
             ))}
             <div
               className="absolute inset-0"
-              style={{ background: "rgba(15,47,70,0.68)" }}
+              style={{ background: "rgba(15,40,120,0.68)" }}
             />
             {/* Dot navigation */}
             <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-2 z-20">
@@ -927,7 +927,7 @@ export default function App() {
                   className="rounded-lg p-8 text-center"
                   style={{
                     background: "rgba(255,255,255,0.05)",
-                    border: "1px solid rgba(201,162,74,0.3)",
+                    border: "1px solid rgba(217,119,6,0.3)",
                   }}
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -996,7 +996,7 @@ export default function App() {
                       className="absolute inset-0 transition-opacity duration-300"
                       style={{
                         background:
-                          "linear-gradient(to top, rgba(15,47,70,0.85) 0%, rgba(15,47,70,0.2) 60%, transparent 100%)",
+                          "linear-gradient(to top, rgba(15,40,120,0.85) 0%, rgba(15,40,120,0.2) 60%, transparent 100%)",
                       }}
                     />
                     <span className="absolute bottom-5 left-5 text-white font-serif font-bold text-xl md:text-2xl tracking-wide">
@@ -1425,8 +1425,8 @@ export default function App() {
         onClick={() => setShowPinModal(true)}
         className="fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-lg"
         style={{
-          background: "rgba(15,47,70,0.85)",
-          border: "1.5px solid rgba(201,162,74,0.4)",
+          background: "rgba(15,40,120,0.85)",
+          border: "1.5px solid rgba(217,119,6,0.4)",
           backdropFilter: "blur(8px)",
         }}
         aria-label="Admin Panel"
@@ -1547,7 +1547,7 @@ function LeaderMessageCard({
       className="rounded-xl p-8 flex flex-col"
       style={{
         background: "rgba(255,255,255,0.04)",
-        border: "1px solid rgba(201,162,74,0.25)",
+        border: "1px solid rgba(217,119,6,0.25)",
       }}
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
@@ -1571,21 +1571,21 @@ function LeaderMessageCard({
       {/* Leader info */}
       <div
         className="flex items-center gap-4 pt-4"
-        style={{ borderTop: "1px solid rgba(201,162,74,0.2)" }}
+        style={{ borderTop: "1px solid rgba(217,119,6,0.2)" }}
       >
         {msg.photoUrl ? (
           <img
             src={msg.photoUrl}
             alt={msg.name}
             className="w-14 h-14 rounded-full object-cover shrink-0"
-            style={{ border: "2px solid rgba(201,162,74,0.5)" }}
+            style={{ border: "2px solid rgba(217,119,6,0.5)" }}
           />
         ) : (
           <div
             className="w-14 h-14 rounded-full flex items-center justify-center shrink-0 font-serif font-bold text-lg"
             style={{
-              background: "rgba(201,162,74,0.15)",
-              border: "2px solid rgba(201,162,74,0.4)",
+              background: "rgba(217,119,6,0.15)",
+              border: "2px solid rgba(217,119,6,0.4)",
               color: "oklch(var(--gold))",
             }}
           >

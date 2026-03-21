@@ -278,7 +278,7 @@ export default function AdminPanel({
           disabled={uploading !== null || saving !== null}
           className="gap-2 text-xs"
           style={{
-            borderColor: "rgba(201,162,74,0.4)",
+            borderColor: "rgba(217,119,6,0.4)",
             color: "oklch(var(--gold))",
             background: "transparent",
           }}
@@ -302,7 +302,7 @@ export default function AdminPanel({
           src={url}
           alt={label}
           className="w-20 h-14 object-cover rounded border"
-          style={{ borderColor: "rgba(201,162,74,0.3)" }}
+          style={{ borderColor: "rgba(217,119,6,0.3)" }}
         />
         <span className="text-xs text-white/40 truncate max-w-[180px]">
           {url}
@@ -321,13 +321,13 @@ export default function AdminPanel({
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
       className="fixed inset-0 z-[90] flex flex-col"
-      style={{ background: "rgba(5,15,25,0.97)", backdropFilter: "blur(8px)" }}
+      style={{ background: "rgba(10,20,60,0.97)", backdropFilter: "blur(8px)" }}
       data-ocid="admin.modal"
     >
       <header
         className="shrink-0 flex items-center justify-between px-6 py-4 border-b"
         style={{
-          borderColor: "rgba(201,162,74,0.2)",
+          borderColor: "rgba(217,119,6,0.2)",
           background: "oklch(var(--navy))",
         }}
       >
@@ -364,7 +364,7 @@ export default function AdminPanel({
             className="shrink-0 border-b overflow-x-auto"
             style={{
               borderColor: "rgba(255,255,255,0.08)",
-              background: "rgba(15,30,50,0.8)",
+              background: "rgba(20,38,100,0.8)",
             }}
           >
             <TabsList className="flex gap-1 px-4 py-2 bg-transparent h-auto rounded-none min-w-max">
@@ -455,7 +455,7 @@ export default function AdminPanel({
                     key={`msg-${msg.role}-${i}`}
                     className="mb-6 p-5 rounded-xl border"
                     style={{
-                      borderColor: "rgba(201,162,74,0.2)",
+                      borderColor: "rgba(217,119,6,0.2)",
                       background: "rgba(255,255,255,0.03)",
                     }}
                     data-ocid={`admin.item.${i + 1}`}
@@ -559,7 +559,7 @@ export default function AdminPanel({
                             alt={msg.name}
                             className="w-14 h-14 rounded-full object-cover"
                             style={{
-                              border: "2px solid rgba(201,162,74,0.4)",
+                              border: "2px solid rgba(217,119,6,0.4)",
                             }}
                           />
                           <button
@@ -608,7 +608,7 @@ export default function AdminPanel({
                 <div
                   className="mb-6 p-5 rounded-xl border"
                   style={{
-                    borderColor: "rgba(201,162,74,0.2)",
+                    borderColor: "rgba(217,119,6,0.2)",
                     background: "rgba(255,255,255,0.03)",
                   }}
                 >
@@ -645,7 +645,7 @@ export default function AdminPanel({
                 <div
                   className="mb-6 p-5 rounded-xl border"
                   style={{
-                    borderColor: "rgba(201,162,74,0.2)",
+                    borderColor: "rgba(217,119,6,0.2)",
                     background: "rgba(255,255,255,0.03)",
                   }}
                 >
@@ -671,7 +671,7 @@ export default function AdminPanel({
                         alt="Logo"
                         className="w-16 h-16 rounded-full object-contain"
                         style={{
-                          border: "2px solid rgba(201,162,74,0.4)",
+                          border: "2px solid rgba(217,119,6,0.4)",
                           background: "rgba(255,255,255,0.05)",
                         }}
                       />
@@ -692,7 +692,7 @@ export default function AdminPanel({
                 <div
                   className="mb-6 p-5 rounded-xl border"
                   style={{
-                    borderColor: "rgba(201,162,74,0.2)",
+                    borderColor: "rgba(217,119,6,0.2)",
                     background: "rgba(255,255,255,0.03)",
                   }}
                 >
@@ -741,7 +741,7 @@ export default function AdminPanel({
                               alt={`Discover ${idx + 1}`}
                               className="w-24 h-14 object-cover rounded"
                               style={{
-                                border: "1px solid rgba(201,162,74,0.3)",
+                                border: "1px solid rgba(217,119,6,0.3)",
                               }}
                             />
                             <button
@@ -778,7 +778,7 @@ export default function AdminPanel({
                     key={`ann-${a.date}-${i}`}
                     className="mb-6 p-5 rounded-xl border"
                     style={{
-                      borderColor: "rgba(201,162,74,0.2)",
+                      borderColor: "rgba(217,119,6,0.2)",
                       background: "rgba(255,255,255,0.03)",
                     }}
                     data-ocid={`admin.item.${i + 1}`}
@@ -886,7 +886,7 @@ export default function AdminPanel({
                     key={`hl-${h.title}-${i}`}
                     className="mb-6 p-5 rounded-xl border"
                     style={{
-                      borderColor: "rgba(201,162,74,0.2)",
+                      borderColor: "rgba(217,119,6,0.2)",
                       background: "rgba(255,255,255,0.03)",
                     }}
                     data-ocid={`admin.item.${i + 1}`}
@@ -1182,7 +1182,7 @@ export default function AdminPanel({
                 <div
                   className="p-6 rounded-xl border"
                   style={{
-                    borderColor: "rgba(201,162,74,0.2)",
+                    borderColor: "rgba(217,119,6,0.2)",
                     background: "rgba(255,255,255,0.03)",
                   }}
                   data-ocid="admin.panel"
