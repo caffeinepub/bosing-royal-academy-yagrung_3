@@ -695,54 +695,55 @@ export default function App() {
       </header>
 
       <main>
-        {/* SLIDING PHOTO SECTION */}
+        {/* HERO */}
         <section
           id="home"
-          className="relative w-full mt-16 overflow-hidden"
-          style={{ height: "480px" }}
+          className="relative flex items-center justify-center min-h-screen pt-16"
           data-ocid="hero.section"
         >
-          {HERO_SLIDES.map((src, i) => (
-            <img
-              key={src}
-              src={src}
-              alt={`Campus slide ${i + 1}`}
-              className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000"
-              style={{ opacity: i === slideIndex ? 1 : 0 }}
-              loading={i === 0 ? "eager" : "lazy"}
-            />
-          ))}
-          {/* Dot navigation */}
-          <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-2 z-20">
+          <div className="absolute inset-0 overflow-hidden">
             {HERO_SLIDES.map((src, i) => (
-              <button
-                type="button"
+              <img
                 key={src}
-                onClick={() => setSlideIndex(i)}
-                className="w-3 h-3 rounded-full transition-all duration-300 border border-white/60"
-                style={{
-                  background:
-                    i === slideIndex
-                      ? "oklch(var(--gold))"
-                      : "rgba(255,255,255,0.35)",
-                  transform: i === slideIndex ? "scale(1.3)" : "scale(1)",
-                }}
-                aria-label={`Go to slide ${i + 1}`}
-                data-ocid="hero.toggle"
+                src={src}
+                alt={`Campus slide ${i + 1}`}
+                className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000"
+                style={{ opacity: i === slideIndex ? 1 : 0 }}
+                loading={i === 0 ? "eager" : "lazy"}
               />
             ))}
+            <div
+              className="absolute inset-0"
+              style={{ background: "rgba(15,40,120,0.68)" }}
+            />
+            {/* Dot navigation */}
+            <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-2 z-20">
+              {HERO_SLIDES.map((src, i) => (
+                <button
+                  type="button"
+                  key={src}
+                  onClick={() => setSlideIndex(i)}
+                  className="w-3 h-3 rounded-full transition-all duration-300 border border-white/60"
+                  style={{
+                    background:
+                      i === slideIndex
+                        ? "oklch(var(--gold))"
+                        : "rgba(255,255,255,0.35)",
+                    transform: i === slideIndex ? "scale(1.3)" : "scale(1)",
+                  }}
+                  aria-label={`Go to slide ${i + 1}`}
+                  data-ocid="hero.toggle"
+                />
+              ))}
+            </div>
           </div>
-        </section>
-
-        {/* HERO TEXT SECTION */}
-        <section
-          className="bg-white py-16 px-4 text-center"
-          data-ocid="hero.panel"
-        >
-          <div className="max-w-4xl mx-auto">
+          <div className="relative z-10 text-center px-4 sm:px-8 max-w-4xl mx-auto py-24">
             <motion.h1
-              className="font-serif font-bold text-4xl sm:text-5xl md:text-6xl mb-4 leading-tight"
-              style={{ color: "oklch(var(--navy))" }}
+              className="font-serif font-bold text-4xl sm:text-5xl md:text-6xl lg:text-7xl mb-4 leading-tight"
+              style={{
+                color: "oklch(var(--gold))",
+                textShadow: "0 2px 16px rgba(0,0,0,0.5)",
+              }}
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.1 }}
@@ -750,8 +751,7 @@ export default function App() {
               {hero.title}
             </motion.h1>
             <motion.p
-              className="font-serif text-xl md:text-2xl mb-3 tracking-wide"
-              style={{ color: "oklch(var(--navy) / 0.75)" }}
+              className="font-serif text-xl md:text-2xl text-white/90 mb-3 tracking-wide"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.2 }}
@@ -759,7 +759,7 @@ export default function App() {
               {hero.subtitle}
             </motion.p>
             <motion.p
-              className="text-gray-600 text-base md:text-lg mb-10 max-w-2xl mx-auto"
+              className="text-white/75 text-base md:text-lg mb-10 max-w-2xl mx-auto"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.7, delay: 0.35 }}
@@ -785,11 +785,8 @@ export default function App() {
               </a>
               <a
                 href="#about"
-                className="px-8 py-3 rounded font-semibold text-base border-2 transition-all"
-                style={{
-                  borderColor: "oklch(var(--gold))",
-                  color: "oklch(var(--navy))",
-                }}
+                className="px-8 py-3 rounded font-semibold text-base border-2 text-white transition-all hover:bg-white/10"
+                style={{ borderColor: "oklch(var(--gold))" }}
                 data-ocid="hero.secondary_button"
               >
                 Discover Our School
@@ -908,7 +905,7 @@ export default function App() {
         <section
           id="academics"
           className="py-20 px-4"
-          style={{ background: "#ffffff" }}
+          style={{ background: "oklch(var(--navy))" }}
           data-ocid="academics.section"
         >
           <div className="max-w-6xl mx-auto">
@@ -919,10 +916,7 @@ export default function App() {
               >
                 Why Choose Us
               </p>
-              <h2
-                className="font-serif text-3xl md:text-4xl font-bold"
-                style={{ color: "oklch(var(--navy))" }}
-              >
+              <h2 className="font-serif text-3xl md:text-4xl font-bold text-white">
                 Academic Highlights
               </h2>
             </div>
@@ -932,7 +926,7 @@ export default function App() {
                   key={`${h.title}-${i}`}
                   className="rounded-lg p-8 text-center"
                   style={{
-                    background: "#f8f9ff",
+                    background: "rgba(255,255,255,0.05)",
                     border: "1px solid rgba(217,119,6,0.3)",
                   }}
                   initial={{ opacity: 0, y: 30 }}
@@ -947,16 +941,10 @@ export default function App() {
                   >
                     {HIGHLIGHT_ICONS[i % HIGHLIGHT_ICONS.length]}
                   </div>
-                  <h3
-                    className="font-serif text-xl font-bold mb-3"
-                    style={{ color: "oklch(var(--navy))" }}
-                  >
+                  <h3 className="font-serif text-xl font-bold text-white mb-3">
                     {h.title}
                   </h3>
-                  <p
-                    className="text-sm leading-relaxed"
-                    style={{ color: "#374151" }}
-                  >
+                  <p className="text-white/70 text-sm leading-relaxed">
                     {h.text}
                   </p>
                 </motion.div>
@@ -1051,7 +1039,7 @@ export default function App() {
         <section
           id="leadership"
           className="py-20 px-4"
-          style={{ background: "#ffffff" }}
+          style={{ background: "oklch(var(--navy))" }}
           data-ocid="leadership.section"
         >
           <div className="max-w-6xl mx-auto">
@@ -1062,10 +1050,7 @@ export default function App() {
               >
                 From the Desk of Our Leaders
               </p>
-              <h2
-                className="font-serif text-3xl md:text-4xl font-bold"
-                style={{ color: "oklch(var(--navy))" }}
-              >
+              <h2 className="font-serif text-3xl md:text-4xl font-bold text-white">
                 Leadership Messages
               </h2>
               <div
@@ -1092,7 +1077,10 @@ export default function App() {
         <section
           id="admissions"
           className="py-20 px-4"
-          style={{ background: "#ffffff" }}
+          style={{
+            background:
+              "linear-gradient(135deg, oklch(var(--navy)) 0%, oklch(0.32 0.07 240) 100%)",
+          }}
           data-ocid="admissions.section"
         >
           <div className="max-w-3xl mx-auto text-center">
@@ -1102,16 +1090,10 @@ export default function App() {
             >
               Join Our Family
             </p>
-            <h2
-              className="font-serif text-3xl md:text-4xl font-bold mb-4"
-              style={{ color: "oklch(var(--navy))" }}
-            >
+            <h2 className="font-serif text-3xl md:text-4xl font-bold text-white mb-4">
               {admissions.heading}
             </h2>
-            <p
-              className="mb-8 text-base md:text-lg"
-              style={{ color: "#374151" }}
-            >
+            <p className="text-white/75 mb-8 text-base md:text-lg">
               {admissions.description}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -1128,11 +1110,8 @@ export default function App() {
               </a>
               <a
                 href="#about"
-                className="px-8 py-3 rounded font-semibold text-base border-2 transition-all hover:bg-navy/10"
-                style={{
-                  borderColor: "oklch(var(--gold))",
-                  color: "oklch(var(--navy))",
-                }}
+                className="px-8 py-3 rounded font-semibold text-base border-2 text-white transition-all hover:bg-white/10"
+                style={{ borderColor: "oklch(var(--gold))" }}
                 data-ocid="admissions.secondary_button"
               >
                 Download Prospectus
@@ -1567,8 +1546,8 @@ function LeaderMessageCard({
     <motion.div
       className="rounded-xl p-8 flex flex-col"
       style={{
-        background: "#f8f9ff",
-        border: "1px solid rgba(217,119,6,0.3)",
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(217,119,6,0.25)",
       }}
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
@@ -1585,10 +1564,7 @@ function LeaderMessageCard({
         &ldquo;
       </div>
 
-      <p
-        className="text-sm leading-relaxed flex-1 mb-6"
-        style={{ color: "#374151" }}
-      >
+      <p className="text-white/75 text-sm leading-relaxed flex-1 mb-6">
         {msg.message}
       </p>
 
@@ -1617,10 +1593,7 @@ function LeaderMessageCard({
           </div>
         )}
         <div>
-          <p
-            className="font-serif font-bold text-base leading-tight"
-            style={{ color: "oklch(var(--navy))" }}
-          >
+          <p className="font-serif font-bold text-white text-base leading-tight">
             {msg.name}
           </p>
           <p
